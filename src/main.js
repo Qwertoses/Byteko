@@ -54,6 +54,7 @@ function doesMessageIncludeAll(msgContent, mustIncludeList) {
 	return mustIncludeList.reduce((prev, mustInclude) => prev && lowerCaseContent.includes(mustInclude), true);
 }
 
+//Handles sending approprate messages & images to specifed users with a % chance
 client.on(Events.MessageCreate, async (msg) => {
 	config.modules.forEach((module) => {
 		if (msg.author.id !== module.targetID) return;
