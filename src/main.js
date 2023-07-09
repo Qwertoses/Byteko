@@ -64,6 +64,8 @@ client.on(Events.MessageCreate, async (msg) => {
 
 		if (!shouldRespond) return;
 
+		if (Math.random() > module.chance) return;
+
 		msg.channel.sendTyping();
 
 		if (module.respondWithImage) {

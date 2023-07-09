@@ -3,6 +3,7 @@
 		{
 			"_comment": "kai",
 			"targetID": "756208821126430851",
+			"chance": 1.00,
 			"responseContent": "You as a catgirl",
 			"respondWithImage": true,
 			"imageDirectory": "kaiResponses",
@@ -15,6 +16,7 @@
 		{
 			"_comment": "don",
 			"targetID": "663823193219268619",
+			"chance": 0.10,
 			"responseContent": "You as a foxgirl",
 			"respondWithImage": true,
 			"imageDirectory": "donResponses",
