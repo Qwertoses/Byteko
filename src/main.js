@@ -24,8 +24,8 @@ function randElementOf(arr) {
 function getRandomImageFilename(parentDir) {
 	if (!fs.existsSync(parentDir)) return;
 	const fileNames = fs.readdirSync(parentDir);
-	if (fileNames.length === 0) return;
-	return parentDir + "/" + randElementOf(filenames);
+	if (fileNames === undefined || fileNames.length === 0) return;
+	return parentDir + "/" + randElementOf(fileNames);
 }
 
 
