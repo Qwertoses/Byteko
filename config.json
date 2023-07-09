@@ -31,5 +31,10 @@
 		"minute": 0,
 		"content": "Today's daily catgirl Nya~~~~",
 		"channelID": "1048383127204143154"
+	},
+
+	"randomReply": {
+		"targetID": "756208821126430851",
+		"chance": 0.01
 	}
 }
