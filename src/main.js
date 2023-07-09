@@ -145,10 +145,11 @@ setInterval(() => {
 }, DAILY_MESSAGE_CHECK_INTERVAL);
 
 //Simple method for random reply message from config file
-const replyMessages = config.replyMessages;
+const replyMessages = fs.readFileSync('replies.txt').toString().trim().split(/\r?\n|\r|\n/g);
 function getReplyMessages() {
-    return replyMessages[Math.floor(Math.random() * replyMessages.length)];
+    return randElementOf(replyMessages).trim();
 }
+
 
 
 //Sends message to specific user ID and occurs at a set percentage
