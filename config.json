@@ -1,23 +1,35 @@
 {
-	"kaiTargetID": "756208821126430851",
-	"kaiMessageMustInclude": [ "dead", "fella" ],
-	"kaiMessageMustInclude2": [ "hunt", "update" ],
-	"kaiMessageMustInclude3": [ "dead", "ah" ],
-	"kaiResponseContent": "You as a catgirl",
-
-	"donTargetID": "663823193219268619",
-	"donMessageMustInclude": ["like"],
-	"donResponseContent": "You as a foxgirl",
+	"modules": [
+		{
+			"_comment": "kai",
+			"targetID": "756208821126430851",
+			"responseContent": "You as a catgirl",
+			"respondWithImage": true,
+			"imageDirectory": "kaiResponses",
+			"mustIncludeOneOf": [
+				[ "dead", "fella" ],
+				[ "hunt", "update" ],
+				[ "dead", "ah" ]
+			]
+		},
+		{
+			"_comment": "don",
+			"targetID": "663823193219268619",
+			"responseContent": "You as a foxgirl",
+			"respondWithImage": true,
+			"imageDirectory": "donResponses",
+			"mustIncludeOneOf": [
+				[ "like" ]
+			]
+		}
+	],
 
 	"errorContent": "my brain hurty (>o<)",
+
 	"dailyMessage": {
 		"hour": 8,
 		"minute": 0,
 		"content": "Today's daily catgirl Nya~~~~",
 		"channelID": "1048383127204143154"
-	},
-
-	"kaiReplyMessages": ["*Nya~~~*","*Meow*","*purrrr*","*hiiiiiiiiiss*","*Lick*", "https://tenor.com/view/kys-keep-yourself-safe-low-tier-god-gif-24664025",
-	"I love you", "Please marry me", "You want to go out for a date?", "Do you want to spend time with me?", "Want to play Hunt Showdown?", 
-	"You're so handsome", "*notices bulge*", "Can we watch 01 together at your house?", "<:Fiend:842483724235178034>"]
+	}
 }

@@ -8,37 +8,10 @@ const fs = require("fs");
 const { Client, Events, GatewayIntentBits, Partials, VoiceChannel } = require('discord.js');
 const IMAGES_DIR = `./images`;
 const DAILY_IMAGES_DIR = `${IMAGES_DIR}/daily`;
-const kaiRESPONSE_IMAGES_DIR = `${IMAGES_DIR}/kaiResponses`;
-const donRESPONSE_IMAGES_DIR = `${IMAGES_DIR}/donResponses`;
 
 
 let config = require("../config.json");
-fs.watchFile("../config.json", {}, () => { config = require("../config.json") });
-
-
-
-function watchImageDir(dirname, namesArr) {
-	fs.watch(dirname, {}, (event, filename) => {
-		const doesExist = fs.existsSync(dirname + "/" + filename);
-		const isStored = namesArr.includes(filename);
-
-		if (doesExist && !isStored) {
-			namesArr.push(filename);
-		}
-		if (!doesExist && isStored) {
-			namesArr.filter((name) => name !== filename);
-		}
-	});
-}
-
-const kaiResponseImageNames = fs.readdirSync(kaiRESPONSE_IMAGES_DIR);
-watchImageDir(kaiRESPONSE_IMAGES_DIR, kaiResponseImageNames);
-
-const donResponseImageNames = fs.readdirSync(donRESPONSE_IMAGES_DIR);
-watchImageDir(donRESPONSE_IMAGES_DIR, donResponseImageNames);
-
-const dailyImageNames = fs.readdirSync(DAILY_IMAGES_DIR);
-watchImageDir(DAILY_IMAGES_DIR, dailyImageNames);
+fs.watchFile("../config.json", {}, () => { global.config = require("../config.json") });
 
 
 
@@ -46,22 +19,12 @@ function randElementOf(arr) {
 	return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function getRandomImageFilename(parentDir, imageNames) {
-	let filename = "";
-	let tries = 0;
-
-	// prevents a race condition where an image has been deleted
-	// but the cache of image names has not been updated yet
-	while (!fs.existsSync(filename)) {
-		filename = parentDir + "/" + randElementOf(imageNames);
-		tries++;
-
-		if (tries > 5) return;
-	}
-
-	return filename;
+function getRandomImageFilename(parentDir) {
+	if (!fs.existsSync(parentDir)) return;
+	const fileNames = fs.readdirSync(parentDir);
+	if (fileNames === undefined || fileNames.length === 0) return;
+	return parentDir + "/" + randElementOf(fileNames);
 }
-
 
 
 const client = new Client({
@@ -89,63 +52,51 @@ client.once(Events.ClientReady, (c) => {
 function doesMessageIncludeAll(msgContent, mustIncludeList) {
 	const lowerCaseContent = msgContent.toLowerCase();
 	return mustIncludeList.reduce((prev, mustInclude) => prev && lowerCaseContent.includes(mustInclude), true);
-  }
+}
 
-//Sends image and message to user who sends key words.
 client.on(Events.MessageCreate, async (msg) => {
-	const kaiShouldRespond = doesMessageIncludeAll(msg.content, config.kaiMessageMustInclude);
-	const kaiShouldRespond2 = doesMessageIncludeAll(msg.content, config.kaiMessageMustInclude2);
-	const kaiShouldRespond3 = doesMessageIncludeAll(msg.content, config.kaiMessageMustInclude3);
-	if (msg.author.id === config.kaiTargetID && (kaiShouldRespond || kaiShouldRespond2 || kaiShouldRespond3)) {
-		msg.channel.sendTyping();
-		const image = getRandomImageFilename(kaiRESPONSE_IMAGES_DIR, kaiResponseImageNames);
+	config.modules.forEach((module) => {
+		if (msg.author.id !== module.targetID) return;
 
-		if (image === undefined) {
-			timestamp("[Error] Could not find an existing response image");
-			msg.channel.send({
-				content: config.errorContent,
-				reply: {
-					messageReference: msg,
-				},
-			});
+		const shouldRespond = module.mustIncludeOneOf.reduce((prev, mustInclude) => {
+			return prev || doesMessageIncludeAll(msg.content, mustInclude);
+		}, false);
+
+		if (!shouldRespond) return;
+
+		msg.channel.sendTyping();
+
+		if (module.respondWithImage) {
+			const imageFilename = getRandomImageFilename(IMAGES_DIR + "/" + module.imageDirectory);
+
+			if (imageFilename === undefined) {
+				timestamp("[Error] Could not find an existing response image");
+				msg.channel.send({
+					content: config.errorContent,
+					reply: {
+						messageReference: msg,
+					},
+				});
+			} else {
+				msg.channel.send({
+					content: module.responseContent,
+					reply: {
+						messageReference: msg,
+					},
+					files: [
+						imageFilename
+					],
+				});
+			}
 		} else {
 			msg.channel.send({
-				content: config.kaiResponseContent,
+				content: module.responseContent,
 				reply: {
 					messageReference: msg,
 				},
-				files: [
-					image
-				],
 			});
 		}
-	}
-	//Sends image and message to user who sends key words.
-	const donShouldRespond = doesMessageIncludeAll(msg.content, config.donMessageMustInclude);
-	if (msg.author.id === (config.donTargetID && (donShouldRespond) && Math.random() <= 0.1) || (msg.author.id === config.donTargetID && Math.random() <= 0.01)){
-		msg.channel.sendTyping();
-		const image = getRandomImageFilename(donRESPONSE_IMAGES_DIR, donResponseImageNames);
-
-		if (image === undefined) {
-			timestamp("[Error] Could not find an existing response image");
-			msg.channel.send({
-				content: config.errorContent,
-				reply: {
-					messageReference: msg,
-				},
-			});
-		} else {
-			msg.channel.send({
-				content: config.donResponseContent + " " + getRandomEmoji(),
-				reply: {
-					messageReference: msg,
-				},
-				files: [
-					image
-				],
-			});
-		}
-	}
+	});
 });
 
 
@@ -171,7 +122,7 @@ setInterval(() => {
 		}
 
 		channel.sendTyping();
-		const image = getRandomImageFilename(DAILY_IMAGES_DIR, dailyImageNames);
+		const image = getRandomImageFilename(DAILY_IMAGES_DIR);
 		
 		if (image === undefined) {
 			timestamp("[Error] Could not find an existing response image");
