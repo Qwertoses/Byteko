@@ -17,49 +17,15 @@ fs.watchFile("../config.json", {}, () => { config = require("../config.json") })
 
 
 
-function watchImageDir(dirname, namesArr) {
-	fs.watch(dirname, {}, (event, filename) => {
-		const doesExist = fs.existsSync(dirname + "/" + filename);
-		const isStored = namesArr.includes(filename);
-
-		if (doesExist && !isStored) {
-			namesArr.push(filename);
-		}
-		if (!doesExist && isStored) {
-			namesArr.filter((name) => name !== filename);
-		}
-	});
-}
-
-const kaiResponseImageNames = fs.readdirSync(kaiRESPONSE_IMAGES_DIR);
-watchImageDir(kaiRESPONSE_IMAGES_DIR, kaiResponseImageNames);
-
-const donResponseImageNames = fs.readdirSync(donRESPONSE_IMAGES_DIR);
-watchImageDir(donRESPONSE_IMAGES_DIR, donResponseImageNames);
-
-const dailyImageNames = fs.readdirSync(DAILY_IMAGES_DIR);
-watchImageDir(DAILY_IMAGES_DIR, dailyImageNames);
-
-
-
 function randElementOf(arr) {
 	return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function getRandomImageFilename(parentDir, imageNames) {
-	let filename = "";
-	let tries = 0;
-
-	// prevents a race condition where an image has been deleted
-	// but the cache of image names has not been updated yet
-	while (!fs.existsSync(filename)) {
-		filename = parentDir + "/" + randElementOf(imageNames);
-		tries++;
-
-		if (tries > 5) return;
-	}
-
-	return filename;
+function getRandomImageFilename(parentDir) {
+	if (!fs.existsSync(parentDir)) return;
+	const fileNames = fs.readdirSync(parentDir);
+	if (fileNames.length === 0) return;
+	return parentDir + "/" + randElementOf(filenames);
 }
 
 
@@ -98,7 +64,7 @@ client.on(Events.MessageCreate, async (msg) => {
 	const kaiShouldRespond3 = doesMessageIncludeAll(msg.content, config.kaiMessageMustInclude3);
 	if (msg.author.id === config.kaiTargetID && (kaiShouldRespond || kaiShouldRespond2 || kaiShouldRespond3)) {
 		msg.channel.sendTyping();
-		const image = getRandomImageFilename(kaiRESPONSE_IMAGES_DIR, kaiResponseImageNames);
+		const image = getRandomImageFilename(kaiRESPONSE_IMAGES_DIR);
 
 		if (image === undefined) {
 			timestamp("[Error] Could not find an existing response image");
@@ -124,7 +90,7 @@ client.on(Events.MessageCreate, async (msg) => {
 	const donShouldRespond = doesMessageIncludeAll(msg.content, config.donMessageMustInclude);
 	if (msg.author.id === (config.donTargetID && (donShouldRespond) && Math.random() <= 0.1) || (msg.author.id === config.donTargetID && Math.random() <= 0.01)){
 		msg.channel.sendTyping();
-		const image = getRandomImageFilename(donRESPONSE_IMAGES_DIR, donResponseImageNames);
+		const image = getRandomImageFilename(donRESPONSE_IMAGES_DIR);
 
 		if (image === undefined) {
 			timestamp("[Error] Could not find an existing response image");
@@ -171,7 +137,7 @@ setInterval(() => {
 		}
 
 		channel.sendTyping();
-		const image = getRandomImageFilename(DAILY_IMAGES_DIR, dailyImageNames);
+		const image = getRandomImageFilename(DAILY_IMAGES_DIR);
 		
 		if (image === undefined) {
 			timestamp("[Error] Could not find an existing response image");
