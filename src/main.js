@@ -8,12 +8,10 @@ const fs = require("fs");
 const { Client, Events, GatewayIntentBits, Partials, VoiceChannel } = require('discord.js');
 const IMAGES_DIR = `./images`;
 const DAILY_IMAGES_DIR = `${IMAGES_DIR}/daily`;
-const kaiRESPONSE_IMAGES_DIR = `${IMAGES_DIR}/kaiResponses`;
-const donRESPONSE_IMAGES_DIR = `${IMAGES_DIR}/donResponses`;
 
 
 let config = require("../config.json");
-fs.watchFile("../config.json", {}, () => { config = require("../config.json") });
+fs.watchFile("../config.json", {}, () => { global.config = require("../config.json") });
 
 
 
@@ -24,10 +22,9 @@ function randElementOf(arr) {
 function getRandomImageFilename(parentDir) {
 	if (!fs.existsSync(parentDir)) return;
 	const fileNames = fs.readdirSync(parentDir);
-	if (fileNames.length === 0) return;
-	return parentDir + "/" + randElementOf(filenames);
+	if (fileNames === undefined || fileNames.length === 0) return;
+	return parentDir + "/" + randElementOf(fileNames);
 }
-
 
 
 const client = new Client({
@@ -55,63 +52,51 @@ client.once(Events.ClientReady, (c) => {
 function doesMessageIncludeAll(msgContent, mustIncludeList) {
 	const lowerCaseContent = msgContent.toLowerCase();
 	return mustIncludeList.reduce((prev, mustInclude) => prev && lowerCaseContent.includes(mustInclude), true);
-  }
+}
 
-//Sends image and message to user who sends key words.
 client.on(Events.MessageCreate, async (msg) => {
-	const kaiShouldRespond = doesMessageIncludeAll(msg.content, config.kaiMessageMustInclude);
-	const kaiShouldRespond2 = doesMessageIncludeAll(msg.content, config.kaiMessageMustInclude2);
-	const kaiShouldRespond3 = doesMessageIncludeAll(msg.content, config.kaiMessageMustInclude3);
-	if (msg.author.id === config.kaiTargetID && (kaiShouldRespond || kaiShouldRespond2 || kaiShouldRespond3)) {
-		msg.channel.sendTyping();
-		const image = getRandomImageFilename(kaiRESPONSE_IMAGES_DIR);
+	config.modules.forEach((module) => {
+		if (msg.author.id !== module.targetID) return;
 
-		if (image === undefined) {
-			timestamp("[Error] Could not find an existing response image");
-			msg.channel.send({
-				content: config.errorContent,
-				reply: {
-					messageReference: msg,
-				},
-			});
+		const shouldRespond = module.mustIncludeOneOf.reduce((prev, mustInclude) => {
+			return prev || doesMessageIncludeAll(msg.content, mustInclude);
+		}, false);
+
+		if (!shouldRespond) return;
+
+		msg.channel.sendTyping();
+
+		if (module.respondWithImage) {
+			const imageFilename = getRandomImageFilename(IMAGES_DIR + "/" + module.imageDirectory);
+
+			if (imageFilename === undefined) {
+				timestamp("[Error] Could not find an existing response image");
+				msg.channel.send({
+					content: config.errorContent,
+					reply: {
+						messageReference: msg,
+					},
+				});
+			} else {
+				msg.channel.send({
+					content: module.responseContent,
+					reply: {
+						messageReference: msg,
+					},
+					files: [
+						imageFilename
+					],
+				});
+			}
 		} else {
 			msg.channel.send({
-				content: config.kaiResponseContent,
+				content: module.responseContent,
 				reply: {
 					messageReference: msg,
 				},
-				files: [
-					image
-				],
 			});
 		}
-	}
-	//Sends image and message to user who sends key words.
-	const donShouldRespond = doesMessageIncludeAll(msg.content, config.donMessageMustInclude);
-	if (msg.author.id === (config.donTargetID && (donShouldRespond) && Math.random() <= 0.1) || (msg.author.id === config.donTargetID && Math.random() <= 0.01)){
-		msg.channel.sendTyping();
-		const image = getRandomImageFilename(donRESPONSE_IMAGES_DIR);
-
-		if (image === undefined) {
-			timestamp("[Error] Could not find an existing response image");
-			msg.channel.send({
-				content: config.errorContent,
-				reply: {
-					messageReference: msg,
-				},
-			});
-		} else {
-			msg.channel.send({
-				content: config.donResponseContent + " " + getRandomEmoji(),
-				reply: {
-					messageReference: msg,
-				},
-				files: [
-					image
-				],
-			});
-		}
-	}
+	});
 });
 
 
