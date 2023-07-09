@@ -151,13 +151,13 @@ function getReplyMessages() {
 
 //Sends message to specific user ID and occurs at a set percentage
 client.on(Events.MessageCreate, async (msg) => {
-	if (msg.author.id === config.targetID && Math.random() <= 0.01) {
+	if (msg.author.id === config.randomReply.targetID && Math.random() <= config.randomReply.chance) {
 		msg.channel.sendTyping();
 		msg.channel.send({
 			content: getReplyMessages() + " " + getRandomEmoji(),
 			reply: {
-					messageReference: msg,
-				},
+				messageReference: msg,
+			},
 		});
 	}
 });
