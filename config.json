@@ -2,7 +2,7 @@
 	"modules": [
 		{
 			"_comment": "kai",
-			"targetID": "756208821126430851",
+			"targetID": "274316186592870400",
 			"chance": 1.00,
 			"responseContent": "You as a catgirl",
 			"respondWithImage": true,
@@ -15,13 +15,13 @@
 		},
 		{
 			"_comment": "don",
-			"targetID": "663823193219268619",
-			"chance": 0.10,
+			"targetID": "274316186592870400",
+			"chance": 0.20,
 			"responseContent": "You as a foxgirl",
 			"respondWithImage": true,
 			"imageDirectory": "donResponses",
 			"mustIncludeOneOf": [
-				[ "like" ]
+				[ "arknights" ]
 			]
 		}
 	],
@@ -36,7 +36,7 @@
 	},
 
 	"randomReply": {
-		"targetID": "756208821126430851",
+		"targetID": "274316186592870400",
 		"chance": 0.01
 	}
 }

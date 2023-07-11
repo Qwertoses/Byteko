@@ -1,6 +1,7 @@
 //import functions from other files
 const { timestamp } = require("./timestamp.js");
 const { getRandomEmoji } = require("./random_emojis.js");
+const { getRndNum } = require("./random_num.js");
 
 
 require("dotenv").config();
@@ -65,7 +66,7 @@ client.on(Events.MessageCreate, async (msg) => {
 
 		if (!shouldRespond) return;
 
-		if (Math.random() > module.chance) return;
+		if (getRndNum() > module.chance * 10000) return;
 
 		msg.channel.sendTyping();
 
@@ -155,7 +156,7 @@ function getReplyMessages() {
 
 //Sends message to specific user ID and occurs at a set percentage
 client.on(Events.MessageCreate, async (msg) => {
-	if (msg.author.id === config.randomReply.targetID && Math.random() <= config.randomReply.chance) {
+	if (msg.author.id === config.randomReply.targetID && getRndNum() <= config.randomReply.chance * 10000) {
 		msg.channel.sendTyping();
 		msg.channel.send({
 			content: getReplyMessages() + " " + getRandomEmoji(),
@@ -166,33 +167,7 @@ client.on(Events.MessageCreate, async (msg) => {
 	}
 });
 
-//Sends message to specific user ID and occurs at a set percentage
-client.on(Events.MessageCreate, async (msg) => {
-	if (msg.author.id === "663823193219268619" && Math.random() <= .01) {
-		msg.channel.sendTyping();
-		const imageFilename = getRandomImageFilename(IMAGES_DIR + "/" + "donResponses");
 
-		if (imageFilename === undefined) {
-			timestamp("[Error] Could not find an existing response image");
-			msg.channel.send({
-				content: config.errorContent,
-				reply: {
-					messageReference: msg,
-				},
-			});
-		} else {
-			msg.channel.send({
-				content: "You as a foxgirl",
-				reply: {
-					messageReference: msg,
-				},
-				files: [
-					imageFilename
-				],
-			});
-		}
-	}
-});
 //Sends message in channel based on how many people in voice chat
 
 client.login(process.env.DISCORD_TOKEN);
