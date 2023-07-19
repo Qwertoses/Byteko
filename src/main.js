@@ -60,11 +60,20 @@ client.on(Events.MessageCreate, async (msg) => {
 	config.modules.forEach((module) => {
 		if (msg.author.id !== module.targetID) return;
 
-		const shouldRespond = module.mustIncludeOneOf.reduce((prev, mustInclude) => {
+		const shouldRespondToContent = module.mustIncludeOneOf.reduce((prev, mustInclude) => {
 			return prev || doesMessageIncludeAll(msg.content, mustInclude);
 		}, false);
 
-		if (!shouldRespond) return;
+		if (!shouldRespondToContent) return;
+
+		const hasAttachments = msg.attachments !== undefined && msg.attachments.length > 0;
+		const shouldRespondToAttachment = hasAttachments && msg.attachments.reduce((attachment) => {
+			return module.mustIncludeOneOf.reduce((prev, mustInclude) => {
+				return prev || doesMessageIncludeAll(attachment.name, mustInclude);
+			}, false);
+		}, false);
+
+		if (!shouldRespondToAttachment) return;
 
 		if (getRndNum() > module.chance * 10000) return;
 
