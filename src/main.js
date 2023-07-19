@@ -5,7 +5,6 @@ const { Client, Events, GatewayIntentBits, Partials, VoiceChannel } = require('d
 //import functions from other files
 const { timestamp } = require("./timestamp.js");
 const { getRandomEmoji } = require("./random_emojis.js");
-const { getRndNum } = require("./random_num.js");
 
 // constants
 const IMAGES_DIR = `./images`;
@@ -79,7 +78,7 @@ client.on(Events.MessageCreate, async (msg) => {
 
 		if (!shouldRespondToAttachment) return;
 
-		if (getRndNum() > module.chance * 10000) return;
+		if (Math.random() > module.chance) return;
 
 		msg.channel.sendTyping();
 
@@ -168,7 +167,7 @@ function getReplyMessages() {
 
 //Sends message to specific user ID and occurs at a set percentage
 client.on(Events.MessageCreate, async (msg) => {
-	if (msg.author.id === config.randomReply.targetID && getRndNum() <= config.randomReply.chance * 10000) {
+	if (msg.author.id === config.randomReply.targetID && Math.random() <= config.randomReply.chance) {
 		msg.channel.sendTyping();
 		msg.channel.send({
 			content: getReplyMessages() + " " + getRandomEmoji(),
