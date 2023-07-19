@@ -1,14 +1,16 @@
-//import functions from other files
-const { timestamp } = require("./timestamp.js");
-const { getRandomEmoji } = require("./random_emojis.js");
-const { getRndNum } = require("./random_num.js");
-
-
 require("dotenv").config();
 const fs = require("fs");
 const { Client, Events, GatewayIntentBits, Partials, VoiceChannel } = require('discord.js');
+
+//import functions from other files
+const { timestamp } = require("./timestamp.js");
+const { getRandomEmoji } = require("./random_emojis.js");
+
+// constants
 const IMAGES_DIR = `./images`;
 const DAILY_IMAGES_DIR = `${IMAGES_DIR}/daily`;
+const DAILY_MESSAGE_CHECK_INTERVAL = 30_000; // measured in ms
+
 
 
 let config = require("../config.json");
@@ -28,6 +30,7 @@ function getRandomImageFilename(parentDir) {
 }
 
 
+
 const client = new Client({
 	intents: [
 		GatewayIntentBits.Guilds,
@@ -43,11 +46,11 @@ const client = new Client({
 	]
 });
 
-
-
 client.once(Events.ClientReady, (c) => {
 	timestamp(`Ready! Logged in as ${c.user.tag}`);
 });
+
+
 
 //Method for making phrases not case sensitive
 function doesMessageIncludeAll(msgContent, mustIncludeList) {
@@ -60,13 +63,22 @@ client.on(Events.MessageCreate, async (msg) => {
 	config.modules.forEach((module) => {
 		if (msg.author.id !== module.targetID) return;
 
-		const shouldRespond = module.mustIncludeOneOf.reduce((prev, mustInclude) => {
+		const shouldRespondToContent = module.mustIncludeOneOf.reduce((prev, mustInclude) => {
 			return prev || doesMessageIncludeAll(msg.content, mustInclude);
 		}, false);
 
-		if (!shouldRespond) return;
+		if (!shouldRespondToContent) return;
 
-		if (getRndNum() > module.chance * 10000) return;
+		const hasAttachments = msg.attachments !== undefined && msg.attachments.length > 0;
+		const shouldRespondToAttachment = hasAttachments && msg.attachments.reduce((attachment) => {
+			return module.mustIncludeOneOf.reduce((prev, mustInclude) => {
+				return prev || doesMessageIncludeAll(attachment.name, mustInclude);
+			}, false);
+		}, false);
+
+		if (!shouldRespondToAttachment) return;
+
+		if (Math.random() > module.chance) return;
 
 		msg.channel.sendTyping();
 
@@ -106,7 +118,6 @@ client.on(Events.MessageCreate, async (msg) => {
 
 
 //Sends a daily image and message in a specific channel
-const DAILY_MESSAGE_CHECK_INTERVAL = 30_000; // measured in ms
 let hasSentDailyMessage = false;
 setInterval(() => {
 	const currentDate = new Date();
@@ -146,17 +157,17 @@ setInterval(() => {
 	}
 }, DAILY_MESSAGE_CHECK_INTERVAL);
 
+
+
 //Simple method for random reply message from config file
 const replyMessages = fs.readFileSync('replies.txt').toString().trim().split(/\r?\n|\r|\n/g);
 function getReplyMessages() {
-    return randElementOf(replyMessages).trim();
+	return randElementOf(replyMessages).trim();
 }
-
-
 
 //Sends message to specific user ID and occurs at a set percentage
 client.on(Events.MessageCreate, async (msg) => {
-	if (msg.author.id === config.randomReply.targetID && getRndNum() <= config.randomReply.chance * 10000) {
+	if (msg.author.id === config.randomReply.targetID && Math.random() <= config.randomReply.chance) {
 		msg.channel.sendTyping();
 		msg.channel.send({
 			content: getReplyMessages() + " " + getRandomEmoji(),
@@ -168,6 +179,8 @@ client.on(Events.MessageCreate, async (msg) => {
 });
 
 
+
 //Sends message in channel based on how many people in voice chat
+
 
 client.login(process.env.DISCORD_TOKEN);
