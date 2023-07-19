@@ -67,8 +67,6 @@ client.on(Events.MessageCreate, async (msg) => {
 			return prev || doesMessageIncludeAll(msg.content, mustInclude);
 		}, false);
 
-		if (!shouldRespondToContent) return;
-
 		const hasAttachments = msg.attachments !== undefined && msg.attachments.length > 0;
 		const shouldRespondToAttachment = hasAttachments && msg.attachments.reduce((attachment) => {
 			return module.mustIncludeOneOf.reduce((prev, mustInclude) => {
@@ -76,7 +74,7 @@ client.on(Events.MessageCreate, async (msg) => {
 			}, false);
 		}, false);
 
-		if (!shouldRespondToAttachment) return;
+		if (!shouldRespondToContent && !shouldRespondToAttachment) return;
 
 		if (Math.random() > module.chance) return;
 
