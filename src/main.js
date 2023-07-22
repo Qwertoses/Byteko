@@ -176,9 +176,20 @@ client.on(Events.MessageCreate, async (msg) => {
 	}
 });
 
-
-
-//Sends message in channel based on how many people in voice chat
-
+//Sends message to specific user ID and occurs whenever attachment is sent
+client.on(Events.MessageCreate, async (msg) => {
+	if (msg.author.id === "756208821126430851" && (msg.attachments.size)) {
+		msg.channel.sendTyping();
+		msg.channel.send({
+			content: "You as a dog girl",
+			reply: {
+				messageReference: msg,
+			},
+			files: [
+				getRandomImageFilename(IMAGES_DIR + "/" + "kaiDogResponses")
+			],
+		});
+	}
+});
 
 client.login(process.env.DISCORD_TOKEN);

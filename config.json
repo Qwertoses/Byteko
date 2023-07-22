@@ -2,20 +2,21 @@
 	"modules": [
 		{
 			"_comment": "kai",
-			"targetID": "274316186592870400",
+			"targetID": "756208821126430851",
 			"chance": 1.00,
 			"responseContent": "You as a catgirl",
 			"respondWithImage": true,
 			"imageDirectory": "kaiResponses",
 			"mustIncludeOneOf": [
-				[ "dead", "fella" ],
+				[ "fella" ],
 				[ "hunt", "update" ],
-				[ "dead", "ah" ]
+				[ "dead", "ah" ],
+				["img_8010.png"]
 			]
 		},
 		{
 			"_comment": "don",
-			"targetID": "274316186592870400",
+			"targetID": "663823193219268619",
 			"chance": 0.20,
 			"responseContent": "You as a foxgirl",
 			"respondWithImage": true,
@@ -36,7 +37,7 @@
 	},
 
 	"randomReply": {
-		"targetID": "274316186592870400",
+		"targetID": "756208821126430851",
 		"chance": 0.01
 	}
 }
