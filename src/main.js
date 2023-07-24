@@ -178,7 +178,7 @@ client.on(Events.MessageCreate, async (msg) => {
 
 //Sends message to specific user ID and occurs whenever attachment is sent
 client.on(Events.MessageCreate, async (msg) => {
-	if (msg.author.id === "274316186592870400" && (msg.attachments.size) && Math.random() <= .30) {
+	if (msg.author.id === "756208821126430851" && (msg.attachments.size) && Math.random() <= .30) {
 		msg.channel.sendTyping();
 		msg.channel.send({
 			content: "You as a dog girl",
@@ -188,6 +188,19 @@ client.on(Events.MessageCreate, async (msg) => {
 			files: [
 				getRandomImageFilename(IMAGES_DIR + "/" + "kaiDogResponses")
 			],
+		});
+	}
+});
+
+//Sends message to specific user ID and occurs whenever attachment is sent
+client.on(Events.MessageCreate, async (msg) => {
+	if (msg.author.id === "756208821126430851" && (msg.attachments.size)) {
+		msg.channel.sendTyping();
+		msg.channel.send({
+			content: "https://www.youtube.com/watch?v=jcYvDZKLQJ0",
+			reply: {
+				messageReference: msg,
+			}
 		});
 	}
 });
